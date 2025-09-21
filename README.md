@@ -31,14 +31,14 @@ ARFA/
 
 ## 功能特性
 
-- ✅ FastAPI 框架
-- ✅ SQLAlchemy ORM
-- ✅ SQLite 數據庫
-- ✅ Pydantic 數據驗證
-- ✅ CORS 支持
-- ✅ 用戶管理 API
-- ✅ 項目管理 API
-- ✅ 自動 API 文檔生成
+-  FastAPI 框架
+-  SQLAlchemy ORM
+-  SQLite 數據庫
+-  Pydantic 數據驗證
+-  CORS 支持
+-  用戶管理 API
+-  項目管理 API
+-  自動 API 文檔生成
 
 ## 安裝和運行
 
@@ -146,7 +146,8 @@ alembic upgrade head
 - [ ] 添加 JWT 認證
 - [ ] 實現密碼加密
 - [ ] 添加數據庫遷移
-- [ ] 添加單元測試
 - [ ] 添加日誌記錄
-- [ ] 添加 Docker 支持
+- [ ] 添加 Docker
+
+DW1s9ay
 
