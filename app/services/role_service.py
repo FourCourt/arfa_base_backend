@@ -71,3 +71,5 @@ class RoleService(BaseService[Role]):
         return db.query(Role).filter(Role.status == 1).offset(skip).limit(limit).all()
 
 
+
+

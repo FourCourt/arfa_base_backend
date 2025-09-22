@@ -35,3 +35,5 @@ class PermissionCreate(BaseModel):
     description: Optional[str] = None
 
 
+
+
