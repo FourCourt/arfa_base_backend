@@ -10,6 +10,45 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+# 添加安全配置到 OpenAPI
+from fastapi.openapi.utils import get_openapi
+from fastapi.security import HTTPBearer
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # 添加安全配置
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    
+    # 為需要認證的端點添加安全要求
+    for path in openapi_schema["paths"]:
+        for method in openapi_schema["paths"][path]:
+            if method in ["get", "post", "put", "delete", "patch"]:
+                endpoint = openapi_schema["paths"][path][method]
+                # 檢查端點是否需要認證（除了登入端點）
+                if not (path == "/auth/login"):
+                    # 統一使用 BearerAuth
+                    endpoint["security"] = [{"BearerAuth": []}]
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,

@@ -70,3 +70,4 @@ class RoleService(BaseService[Role]):
         """獲取活躍角色列表"""
         return db.query(Role).filter(Role.status == 1).offset(skip).limit(limit).all()
 
+

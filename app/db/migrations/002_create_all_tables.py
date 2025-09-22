@@ -1,7 +1,7 @@
 """
 創建所有業務表
 """
-from app.database.migrations.base import BaseMigration
+from app.db.migrations.base import BaseMigration
 
 class CreateAllTables(BaseMigration):
     """創建所有業務表"""
@@ -18,9 +18,6 @@ class CreateAllTables(BaseMigration):
         if not self.table_exists(db, "users"):
             self.create_users_table(db)
         
-        # 創建項目表
-        if not self.table_exists(db, "items"):
-            self.create_items_table(db)
         
         # 創建角色表
         if not self.table_exists(db, "roles"):
@@ -60,7 +57,6 @@ class CreateAllTables(BaseMigration):
             "user_roles",
             "permissions",
             "roles",
-            "items",
             "users"
         ]
         
@@ -97,25 +93,6 @@ class CreateAllTables(BaseMigration):
         """
         self.execute_sql(db, sql)
     
-    def create_items_table(self, db):
-        """創建項目表"""
-        sql = """
-        CREATE TABLE items (
-            id BIGINT AUTO_INCREMENT PRIMARY KEY,
-            title VARCHAR(255) NOT NULL,
-            description TEXT,
-            price DECIMAL(10,2),
-            owner_id BIGINT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            INDEX idx_owner_id (owner_id),
-            INDEX idx_title (title),
-            INDEX idx_price (price),
-            INDEX idx_created_at (created_at),
-            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        """
-        self.execute_sql(db, sql)
     
     def create_roles_table(self, db):
         """創建角色表"""

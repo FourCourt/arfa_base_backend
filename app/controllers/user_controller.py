@@ -240,3 +240,4 @@ class UserController:
         # 暫時簡單判斷用戶名包含 admin
         return "admin" in user.username.lower()
 
+

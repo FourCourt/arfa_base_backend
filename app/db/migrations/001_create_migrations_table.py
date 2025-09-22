@@ -1,7 +1,7 @@
 """
 創建 migrations 表
 """
-from app.database.migrations.base import BaseMigration
+from app.db.migrations.base import BaseMigration
 
 class CreateMigrationsTable(BaseMigration):
     """創建 migrations 表"""

@@ -38,3 +38,4 @@ def is_production() -> bool:
     """檢查是否為生產環境"""
     return get_environment() == "production"
 
+

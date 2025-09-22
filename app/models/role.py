@@ -38,3 +38,4 @@ class RoleCreate(BaseModel):
     description: Optional[str] = None
     status: int = 1
 
+

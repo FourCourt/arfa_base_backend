@@ -36,8 +36,6 @@ class User(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # 關聯到項目
-    items = relationship("Item", back_populates="owner")
     # 關聯到登入日誌
     login_logs = relationship("UserLoginEvent", back_populates="user")
     # 關聯到用戶角色

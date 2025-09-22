@@ -184,3 +184,4 @@ class AuthService:
         db.add(login_event)
         return login_event
 
+

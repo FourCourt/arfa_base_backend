@@ -9,8 +9,8 @@ import os
 # 添加項目根目錄到 Python 路徑
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database.migrate import run_migrations, show_migration_status
-from app.database.seed import run_all_seeders, show_seeder_list
+from app.db.migrate import run_migrations, show_migration_status
+from app.db.seed import run_all_seeders, show_seeder_list
 
 def setup_database():
     """設置數據庫：執行 migrations 和 seeders"""
@@ -73,7 +73,7 @@ def reset_database():
         return
     
     try:
-        from app.database import engine
+        from app.db import engine
         from sqlalchemy import text
         
         print("🗑️  正在重置數據庫...")
