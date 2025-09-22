@@ -28,16 +28,29 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def create_migrations_table(db: Session):
     """創建 migrations 表"""
-    sql = """
-    CREATE TABLE IF NOT EXISTS migrations (
-        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-        version VARCHAR(10) NOT NULL UNIQUE,
-        description TEXT,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_version (version),
-        INDEX idx_executed_at (executed_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    """
+    # 檢查資料庫類型
+    if "sqlite" in settings.DATABASE_URL:
+        # SQLite 語法
+        sql = """
+        CREATE TABLE IF NOT EXISTS migrations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            version VARCHAR(10) NOT NULL UNIQUE,
+            description TEXT,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    else:
+        # MySQL 語法
+        sql = """
+        CREATE TABLE IF NOT EXISTS migrations (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            version VARCHAR(10) NOT NULL UNIQUE,
+            description TEXT,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_version (version),
+            INDEX idx_executed_at (executed_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """
     db.execute(text(sql))
     db.commit()
 
@@ -447,5 +460,7 @@ def setup_database():
 
 if __name__ == "__main__":
     setup_database()
+
+
 
 
