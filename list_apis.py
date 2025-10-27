@@ -7,7 +7,7 @@ from fastapi.routing import APIRoute
 
 def list_all_apis():
     """列出所有 API 端點"""
-    print("🚀 ARFA API 端點列表")
+    print("LAZY API 端點列表")
     print("=" * 60)
     
     routes = []
@@ -29,7 +29,7 @@ def list_all_apis():
         # 顯示標籤分組
         if route['tags'] and route['tags'][0] != current_tag:
             current_tag = route['tags'][0]
-            print(f"\n📂 {current_tag}")
+            print(f"\n[{current_tag}]")
             print("-" * 40)
         
         # 顯示端點信息
@@ -42,7 +42,7 @@ def list_all_apis():
     print(f"總共 {len(routes)} 個 API 端點")
     
     # 顯示基礎信息
-    print(f"\n📊 服務信息:")
+    print(f"\n服務信息:")
     print(f"  服務地址: http://localhost:8000")
     print(f"  API 文檔: http://localhost:8000/docs")
     print(f"  ReDoc: http://localhost:8000/redoc")

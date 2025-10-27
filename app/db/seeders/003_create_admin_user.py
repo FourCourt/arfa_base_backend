@@ -29,7 +29,7 @@ class CreateAdminUserSeeder(BaseSeeder):
         admin_user = self.user_service.create_user(
             db=db,
             username="admin",
-            email="admin@arfa.com",
+            email="admin@lazy.com",
             phone="+886912345678",
             password="Admin123!@#"
         )
@@ -44,7 +44,7 @@ class CreateAdminUserSeeder(BaseSeeder):
         
         print("✅ 管理員用戶創建成功")
         print(f"   用戶名: admin")
-        print(f"   郵箱: admin@arfa.com")
+        print(f"   郵箱: admin@lazy.com")
         print(f"   密碼: Admin123!@#")
         print(f"   角色: 系統管理員")
     

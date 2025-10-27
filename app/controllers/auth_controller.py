@@ -4,7 +4,7 @@
 from typing import Dict, Any
 from fastapi import Request, HTTPException, status
 from sqlalchemy.orm import Session
-from app.models.user import User, UserLogin, PasswordReset, PasswordResetConfirm
+from app.models.user import User, UserLogin, PasswordReset, PasswordResetConfirm, UserRegister, EmailVerification
 from app.services.auth_service import AuthService
 from app.core.dependencies import get_current_user
 
@@ -128,4 +128,55 @@ class AuthController:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="獲取登入日誌時發生錯誤"
+            )
+    
+    def register(self, db: Session, user_register: UserRegister) -> Dict[str, Any]:
+        """用戶註冊"""
+        try:
+            # 檢查密碼強度
+            from app.core.security import is_password_strong
+            is_strong, message = is_password_strong(user_register.password)
+            if not is_strong:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=message
+                )
+            
+            result = self.auth_service.register_user(
+                db=db,
+                username=user_register.username,
+                email=user_register.email,
+                phone=user_register.phone,
+                password=user_register.password,
+                confirm_password=user_register.confirm_password
+            )
+            
+            return result
+            
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="註冊過程中發生錯誤"
+            )
+    
+    def verify_email(self, db: Session, email_verification: EmailVerification) -> Dict[str, str]:
+        """驗證郵箱"""
+        try:
+            result = self.auth_service.verify_email(db, email_verification.token)
+            return result
+            
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="郵箱驗證過程中發生錯誤"
             )

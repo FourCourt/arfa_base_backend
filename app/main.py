@@ -6,7 +6,7 @@ from app.core.config import settings
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="ARFA FastAPI Backend",
+    description="LAZY FastAPI Backend",
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
@@ -63,7 +63,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to ARFA API", "version": settings.VERSION}
+    return {"message": "Welcome to LAZY API", "version": settings.VERSION}
 
 @app.get("/health")
 async def health_check():

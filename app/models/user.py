@@ -32,6 +32,11 @@ class User(Base):
     password_reset_token = Column(String(255), nullable=True)
     password_reset_expires = Column(DateTime, nullable=True)
     
+    # 郵箱驗證
+    email_verified = Column(Boolean, nullable=False, default=False)
+    email_verification_token = Column(String(255), nullable=True)
+    email_verification_expires = Column(DateTime, nullable=True)
+    
     # 時間戳
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -57,6 +62,11 @@ class User(Base):
     def is_disabled(self) -> bool:
         """檢查用戶是否被停用"""
         return self.status == 0
+    
+    @property
+    def is_verified(self) -> bool:
+        """檢查用戶是否已驗證郵箱"""
+        return self.email_verified
 
 class UserBase(BaseModel):
     username: str
@@ -96,3 +106,22 @@ class PasswordResetConfirm(BaseModel):
 
 class UserStatusUpdate(BaseModel):
     status: int  # 1: 活躍, 0: 停用, -1: 鎖定
+
+class UserRegister(BaseModel):
+    """用戶註冊模型"""
+    username: str
+    email: str
+    phone: Optional[str] = None
+    password: str
+    confirm_password: str
+
+class EmailVerification(BaseModel):
+    """郵箱驗證模型"""
+    token: str
+
+class UserRegisterResponse(BaseModel):
+    """註冊響應模型"""
+    message: str
+    user_id: int
+    email: str
+    verification_required: bool = True

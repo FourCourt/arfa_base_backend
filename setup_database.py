@@ -40,7 +40,7 @@ def setup_database():
         print("\n🔑 管理員登入信息:")
         print("• 用戶名: admin")
         print("• 密碼: Admin123!@#")
-        print("• 郵箱: admin@arfa.com")
+        print("• 郵箱: admin@lazy.com")
         
         print("\n🌐 可以訪問:")
         print("• API 文檔: http://localhost:8000/docs")

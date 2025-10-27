@@ -13,6 +13,7 @@ from app.db import SessionLocal
 from app.db.migrations.base import BaseMigration
 from app.db.migrations.create_migrations_table import CreateMigrationsTable
 from app.db.migrations.create_all_tables import CreateAllTables
+from app.db.migrations.add_email_verification import AddEmailVerification
 
 class MigrationManager:
     """Migration 管理器"""
@@ -21,6 +22,7 @@ class MigrationManager:
         self.migrations: List[BaseMigration] = [
             CreateMigrationsTable(),
             CreateAllTables(),
+            AddEmailVerification(),
         ]
     
     def get_executed_migrations(self, db: Session) -> List[str]:

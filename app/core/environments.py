@@ -8,13 +8,13 @@ from typing import Dict
 # 環境配置
 ENVIRONMENT_CONFIGS = {
     "development": {
-        "DATABASE_URL": "mysql+pymysql://root:@localhost:3306/arfa_db",
+        "DATABASE_URL": "mysql+pymysql://root:@localhost:3306/lazy_db",
         "DEBUG": True,
         "CORS_ORIGINS": ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000"],
         "SECRET_KEY": "development-secret-key-change-in-production"
     },
     "production": {
-        "DATABASE_URL": "postgresql://username:password@localhost:5432/arfa_db",
+        "DATABASE_URL": "postgresql://username:password@localhost:5432/lazy_db",
         "DEBUG": False,
         "CORS_ORIGINS": ["https://yourdomain.com", "https://www.yourdomain.com"],
         "SECRET_KEY": "your-production-secret-key-here"

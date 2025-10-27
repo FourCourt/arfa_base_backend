@@ -53,6 +53,13 @@ class AuthService:
             db.commit()
             raise ValueError("帳號已被停用")
         
+        # 檢查郵箱是否已驗證
+        if not user.is_verified:
+            login_event.user_id = user.id
+            login_event.reason = 5  # 郵箱未驗證
+            db.commit()
+            raise ValueError("請先驗證郵箱後再登入")
+        
         # 登入成功
         self.user_service.reset_failed_login_count(db, user, ip_address)
         
@@ -183,6 +190,62 @@ class AuthService:
         
         db.add(login_event)
         return login_event
+    
+    def register_user(self, db: Session, username: str, email: str, phone: Optional[str], 
+                     password: str, confirm_password: str) -> Dict[str, Any]:
+        """用戶註冊"""
+        
+        # 驗證密碼確認
+        if password != confirm_password:
+            raise ValueError("密碼和確認密碼不匹配")
+        
+        # 檢查用戶名、郵箱、電話是否已存在
+        existing_user = self.user_service.get_by_username_or_email_or_phone(db, username, email, phone)
+        if existing_user:
+            if existing_user.username == username:
+                raise ValueError("用戶名已存在")
+            elif existing_user.email == email:
+                raise ValueError("郵箱已被註冊")
+            elif existing_user.phone == phone:
+                raise ValueError("電話號碼已被註冊")
+        
+        # 創建用戶（未驗證狀態）
+        user = self.user_service.create_user(
+            db=db,
+            username=username,
+            email=email,
+            phone=phone,
+            password=password
+        )
+        
+        # 設置為未驗證狀態
+        user.email_verified = False
+        user.status = 0  # 停用狀態，等待郵箱驗證
+        
+        # 生成郵箱驗證令牌
+        verification_token = self.user_service.set_email_verification_token(db, user)
+        
+        # 在實際應用中，這裡應該發送郵件
+        # 現在我們只是記錄令牌（僅用於開發測試）
+        print(f"郵箱驗證令牌 (僅開發用): {verification_token}")
+        
+        db.commit()
+        
+        return {
+            "message": "註冊成功，請檢查郵箱進行驗證",
+            "user_id": user.id,
+            "email": user.email,
+            "verification_required": True
+        }
+    
+    def verify_email(self, db: Session, token: str) -> Dict[str, str]:
+        """驗證郵箱"""
+        success = self.user_service.verify_email_with_token(db, token)
+        
+        if not success:
+            raise ValueError("無效或已過期的驗證令牌")
+        
+        return {"message": "郵箱驗證成功，帳號已激活"}
 
 
 

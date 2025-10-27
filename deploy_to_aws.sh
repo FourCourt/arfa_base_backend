@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ARFA API AWS 部署腳本
+# LAZY API AWS 部署腳本
 # 使用方法: ./deploy_to_aws.sh your-key.pem ec2-user@your-ec2-ip
 
 set -e  # 遇到錯誤立即退出
@@ -55,19 +55,19 @@ log_info "創建臨時目錄: $TEMP_DIR"
 
 # 複製項目文件到臨時目錄
 log_info "準備項目文件..."
-cp -r . "$TEMP_DIR/arfa"
-cd "$TEMP_DIR/arfa"
+cp -r . "$TEMP_DIR/lazy"
+cd "$TEMP_DIR/lazy"
 
 # 刪除不需要的文件
 rm -rf __pycache__ .git .env app/__pycache__ app/*/__pycache__
 
 # 創建部署包
 log_info "創建部署包..."
-tar -czf ../arfa-deploy.tar.gz .
+tar -czf ../lazy-deploy.tar.gz .
 
 # 上傳到EC2
 log_info "上傳文件到EC2實例..."
-scp -i "$PEM_FILE" ../arfa-deploy.tar.gz "$EC2_CONNECTION:/tmp/"
+scp -i "$PEM_FILE" ../lazy-deploy.tar.gz "$EC2_CONNECTION:/tmp/"
 
 # 在EC2上執行部署
 log_info "在EC2上執行部署..."
@@ -99,28 +99,28 @@ log_error() {
 
 # 創建應用目錄
 log_info "創建應用目錄..."
-sudo mkdir -p /opt/arfa
-sudo chown ec2-user:ec2-user /opt/arfa
+sudo mkdir -p /opt/lazy
+sudo chown ec2-user:ec2-user /opt/lazy
 
 # 停止現有服務
 log_info "停止現有服務..."
-sudo systemctl stop arfa 2>/dev/null || true
+sudo systemctl stop lazy 2>/dev/null || true
 
 # 備份現有配置
-if [ -f "/opt/arfa/.env" ]; then
+if [ -f "/opt/lazy/.env" ]; then
     log_info "備份現有配置..."
-    cp /opt/arfa/.env /tmp/arfa.env.backup
+    cp /opt/lazy/.env /tmp/lazy.env.backup
 fi
 
 # 解壓新文件
 log_info "解壓新文件..."
-cd /opt/arfa
-tar -xzf /tmp/arfa-deploy.tar.gz
+cd /opt/lazy
+tar -xzf /tmp/lazy-deploy.tar.gz
 
 # 恢復配置
-if [ -f "/tmp/arfa.env.backup" ]; then
+if [ -f "/tmp/lazy.env.backup" ]; then
     log_info "恢復配置..."
-    cp /tmp/arfa.env.backup .env
+    cp /tmp/lazy.env.backup .env
 fi
 
 # 創建虛擬環境
@@ -148,23 +148,23 @@ sudo systemctl daemon-reload
 
 # 啟動服務
 log_info "啟動服務..."
-sudo systemctl enable arfa
-sudo systemctl start arfa
+sudo systemctl enable lazy
+sudo systemctl start lazy
 
 # 檢查服務狀態
 log_info "檢查服務狀態..."
 sleep 5
-if sudo systemctl is-active --quiet arfa; then
+if sudo systemctl is-active --quiet lazy; then
     log_success "服務啟動成功!"
-    sudo systemctl status arfa --no-pager
+    sudo systemctl status lazy --no-pager
 else
     log_error "服務啟動失敗!"
-    sudo journalctl -u arfa -n 20 --no-pager
+    sudo journalctl -u lazy -n 20 --no-pager
     exit 1
 fi
 
 # 清理臨時文件
-rm -f /tmp/arfa-deploy.tar.gz /tmp/arfa.env.backup
+rm -f /tmp/lazy-deploy.tar.gz /tmp/lazy.env.backup
 
 log_success "部署完成!"
 EOF
@@ -174,5 +174,5 @@ log_info "清理臨時文件..."
 rm -rf "$TEMP_DIR"
 
 log_success "AWS部署完成!"
-log_info "請檢查服務狀態: ssh -i $PEM_FILE $EC2_CONNECTION 'sudo systemctl status arfa'"
+log_info "請檢查服務狀態: ssh -i $PEM_FILE $EC2_CONNECTION 'sudo systemctl status lazy'"
 

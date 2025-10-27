@@ -1,4 +1,4 @@
-# ARFA FastAPI 後端項目
+# LAZY FastAPI 後端項目
 
 這是一個使用 FastAPI 構建的現代化後端 API 項目，已部署到 AWS EC2 並使用 PostgreSQL 資料庫。
 
@@ -15,7 +15,7 @@
 ## 項目結構
 
 ```
-ARFA/
+LAZY/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                 # FastAPI 應用主文件
@@ -165,7 +165,7 @@ alembic upgrade head
 ### PostgreSQL (生產環境)
 - **主機:** localhost
 - **端口:** 5432
-- **資料庫:** arfa
+- **資料庫:** lazy
 - **用戶:** lazyadmin
 - **密碼:** 2djixxjl
 

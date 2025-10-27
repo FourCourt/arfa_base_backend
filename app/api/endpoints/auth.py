@@ -4,7 +4,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.models.user import User, UserLogin, PasswordReset, PasswordResetConfirm
+from app.models.user import User, UserLogin, PasswordReset, PasswordResetConfirm, UserRegister, EmailVerification, UserRegisterResponse
 from app.core.dependencies import get_current_user
 from app.controllers.auth_controller import AuthController
 
@@ -60,3 +60,19 @@ async def get_login_logs(
 ):
     """Get login logs"""
     return auth_controller.get_login_logs(db, current_user, skip, limit)
+
+@router.post("/register", response_model=UserRegisterResponse, summary="User Registration", description="Register a new user account")
+async def register(
+    user_register: UserRegister,
+    db: Session = Depends(get_db)
+):
+    """User registration"""
+    return auth_controller.register(db, user_register)
+
+@router.post("/verify-email", summary="Verify Email", description="Verify user email with token")
+async def verify_email(
+    email_verification: EmailVerification,
+    db: Session = Depends(get_db)
+):
+    """Verify email address"""
+    return auth_controller.verify_email(db, email_verification)

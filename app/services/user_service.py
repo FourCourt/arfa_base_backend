@@ -156,6 +156,35 @@ class UserService(BaseService[User]):
     def get_locked_users(self, db: Session, skip: int = 0, limit: int = 100) -> List[User]:
         """獲取被鎖定的用戶列表"""
         return db.query(User).filter(User.status == -1).offset(skip).limit(limit).all()
+    
+    def set_email_verification_token(self, db: Session, user: User) -> str:
+        """設置郵箱驗證令牌"""
+        from app.core.security import generate_password_reset_token
+        token = generate_password_reset_token()
+        user.email_verification_token = hash_token(token)
+        user.email_verification_expires = datetime.utcnow() + timedelta(hours=24)  # 24小時過期
+        db.commit()
+        return token
+    
+    def verify_email_with_token(self, db: Session, token: str) -> bool:
+        """使用令牌驗證郵箱"""
+        hashed_token = hash_token(token)
+        user = db.query(User).filter(
+            User.email_verification_token == hashed_token,
+            User.email_verification_expires > datetime.utcnow()
+        ).first()
+        
+        if not user:
+            return False
+        
+        # 驗證成功，激活帳號
+        user.email_verified = True
+        user.status = 1  # 活躍狀態
+        user.email_verification_token = None
+        user.email_verification_expires = None
+        db.commit()
+        
+        return True
 
 
 
