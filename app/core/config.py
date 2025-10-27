@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     
     # Database - 根據環境自動選擇
-    DATABASE_URL: str = get_config().get("DATABASE_URL", "mysql+pymysql://root:@localhost:3306/lazy_db")
+    DATABASE_URL: str = get_config().get("DATABASE_URL", "sqlite:///./lazy_dev.db")
     
     # Security
     SECRET_KEY: str = get_config().get("SECRET_KEY", "your-secret-key-here-change-in-production")

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, VARBINARY, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, VARBINARY, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,8 +8,8 @@ from app.models.base import Base
 class UserSession(Base):
     __tablename__ = "user_sessions"
     
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     session_id = Column(String(64), nullable=False, unique=True)
     token_signature = Column(String(64), nullable=False)
     ip = Column(VARBINARY(16), nullable=True)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,7 +8,7 @@ from app.models.base import Base
 class Permission(Base):
     __tablename__ = "permissions"
     
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     code = Column(String(150), nullable=False, unique=True)
     name = Column(String(150), nullable=False)
     description = Column(String(255), nullable=True)

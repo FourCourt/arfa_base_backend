@@ -7,7 +7,7 @@ import json
 
 def test_registration():
     """測試用戶註冊功能"""
-    base_url = "http://localhost:8000"
+    base_url = "http://localhost:8001"
     
     # 測試註冊
     register_data = {
@@ -30,7 +30,7 @@ def test_registration():
         print(f"響應: {response.json()}")
         
         if response.status_code == 200:
-            print("✅ 註冊成功！")
+            print("[SUCCESS] 註冊成功！")
             
             # 測試郵箱驗證（使用假令牌）
             print("\n測試郵箱驗證...")
@@ -48,16 +48,16 @@ def test_registration():
             print(f"驗證響應: {verify_response.json()}")
             
         else:
-            print("❌ 註冊失敗")
+            print("[ERROR] 註冊失敗")
             
     except requests.exceptions.ConnectionError:
-        print("❌ 無法連接到服務器，請確保服務器正在運行")
+        print("[ERROR] 無法連接到服務器，請確保服務器正在運行")
     except Exception as e:
-        print(f"❌ 測試失敗: {str(e)}")
+        print(f"[ERROR] 測試失敗: {str(e)}")
 
 def test_login_with_unverified_user():
     """測試未驗證用戶登入"""
-    base_url = "http://localhost:8000"
+    base_url = "http://localhost:8001"
     
     login_data = {
         "username": "testuser",
@@ -76,12 +76,12 @@ def test_login_with_unverified_user():
         print(f"響應: {response.json()}")
         
         if response.status_code == 401:
-            print("✅ 未驗證用戶無法登入（符合預期）")
+            print("[SUCCESS] 未驗證用戶無法登入（符合預期）")
         else:
-            print("❌ 未驗證用戶不應該能夠登入")
+            print("[ERROR] 未驗證用戶不應該能夠登入")
             
     except Exception as e:
-        print(f"❌ 測試失敗: {str(e)}")
+        print(f"[ERROR] 測試失敗: {str(e)}")
 
 if __name__ == "__main__":
     print("開始測試註冊功能...")

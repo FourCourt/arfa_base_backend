@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,8 +8,8 @@ from app.models.base import Base
 class UserRole(Base):
     __tablename__ = "user_roles"
     
-    user_id = Column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    role_id = Column(BigInteger, ForeignKey("roles.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), primary_key=True)
     created_at = Column(DateTime, nullable=True, default=datetime.utcnow)
     
     # 關聯

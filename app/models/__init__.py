@@ -7,9 +7,12 @@ from app.models.permission import Permission
 from app.models.user_role import UserRole
 from app.models.role_permission import RolePermission
 from app.models.user_session import UserSession
+from app.models.server import Server
+from app.models.database_config import DatabaseConfig, ConnectionTestLog
 
 __all__ = [
     "Base", "User", "UserLoginEvent", 
     "PasswordReset", "Role", "Permission", 
-    "UserRole", "RolePermission", "UserSession"
+    "UserRole", "RolePermission", "UserSession",
+    "Server", "DatabaseConfig", "ConnectionTestLog"
 ]

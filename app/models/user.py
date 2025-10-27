@@ -9,7 +9,7 @@ class User(Base):
     __tablename__ = "users"
     
     # 主鍵
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     
     # 用戶基本信息
     username = Column(String(50), unique=True, index=True, nullable=False)
@@ -47,6 +47,10 @@ class User(Base):
     user_roles = relationship("UserRole", back_populates="user")
     # 關聯到用戶會話
     user_sessions = relationship("UserSession", back_populates="user")
+    # 關聯到伺服器
+    servers = relationship("Server", back_populates="user")
+    # 關聯到資料庫配置
+    database_configs = relationship("DatabaseConfig", back_populates="user")
     
     @property
     def is_active(self) -> bool:

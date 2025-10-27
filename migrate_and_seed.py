@@ -56,7 +56,18 @@ def create_migrations_table(db: Session):
 
 def create_all_tables(db: Session):
     """創建所有業務表"""
+    from app.core.config import settings
     
+    if "sqlite" in settings.DATABASE_URL:
+        # 使用 SQLAlchemy ORM 創建表
+        from app.models import Base
+        Base.metadata.create_all(bind=db.bind)
+    else:
+        # MySQL 語法
+        create_mysql_tables(db)
+
+def create_mysql_tables(db: Session):
+    """創建 MySQL 表"""
     # 創建用戶表
     sql = """
     CREATE TABLE IF NOT EXISTS users (
@@ -233,22 +244,30 @@ def create_all_tables(db: Session):
 
 def create_admin_role(db: Session):
     """創建管理員角色"""
+    from app.models.role import Role
+    
     # 檢查角色是否已存在
-    result = db.execute(text("SELECT COUNT(*) FROM roles WHERE code = 'admin'"))
-    if result.scalar() > 0:
-        print("✅ 管理員角色已存在")
+    existing_role = db.query(Role).filter(Role.code == 'admin').first()
+    if existing_role:
+        print("[SUCCESS] 管理員角色已存在")
         return
     
-    sql = """
-    INSERT INTO roles (code, name, description, status, created_at, updated_at)
-    VALUES ('admin', '系統管理員', '擁有系統所有權限的管理員角色', 1, NOW(), NOW())
-    """
-    db.execute(text(sql))
+    # 創建管理員角色
+    admin_role = Role(
+        code='admin',
+        name='系統管理員',
+        description='擁有系統所有權限的管理員角色',
+        status=1
+    )
+    
+    db.add(admin_role)
     db.commit()
-    print("✅ 管理員角色創建成功")
+    print("[SUCCESS] 管理員角色創建成功")
 
 def create_permissions(db: Session):
     """創建權限數據"""
+    from app.models.permission import Permission
+    
     permissions = [
         ("user.create", "創建用戶", "可以創建新用戶"),
         ("user.read", "查看用戶", "可以查看用戶信息"),
@@ -278,181 +297,194 @@ def create_permissions(db: Session):
     created_count = 0
     for code, name, description in permissions:
         # 檢查權限是否已存在
-        result = db.execute(text("SELECT COUNT(*) FROM permissions WHERE code = :code"), {"code": code})
-        if result.scalar() > 0:
+        existing_permission = db.query(Permission).filter(Permission.code == code).first()
+        if existing_permission:
             continue
         
-        sql = """
-        INSERT INTO permissions (code, name, description, created_at, updated_at)
-        VALUES (:code, :name, :description, NOW(), NOW())
-        """
-        db.execute(text(sql), {"code": code, "name": name, "description": description})
+        # 創建權限
+        permission = Permission(
+            code=code,
+            name=name,
+            description=description
+        )
+        
+        db.add(permission)
         created_count += 1
     
     db.commit()
-    print(f"✅ 權限創建完成，新增 {created_count} 個權限")
+    print(f"[SUCCESS] 權限創建完成，新增 {created_count} 個權限")
 
 def create_admin_user(db: Session):
     """創建管理員用戶"""
+    from app.models.user import User
+    from app.core.security import create_password_hash
+    
     # 檢查管理員用戶是否已存在
-    result = db.execute(text("SELECT COUNT(*) FROM users WHERE username = 'admin'"))
-    if result.scalar() > 0:
-        print("✅ 管理員用戶已存在")
+    existing_user = db.query(User).filter(User.username == 'admin').first()
+    if existing_user:
+        print("[SUCCESS] 管理員用戶已存在")
         return
     
     # 創建密碼哈希
     password_hash, password_salt, password_iters = create_password_hash("Admin123!@#")
     
     # 創建管理員用戶
-    sql = """
-    INSERT INTO users (username, email, phone, password_hash, password_salt, password_iters, status, created_at, updated_at)
-    VALUES ('admin', 'admin@lazy.com', '+886912345678', :password_hash, :password_salt, :password_iters, 1, NOW(), NOW())
-    """
-    db.execute(text(sql), {
-        "password_hash": password_hash,
-        "password_salt": password_salt,
-        "password_iters": password_iters
-    })
+    admin_user = User(
+        username='admin',
+        email='admin@lazy.com',
+        phone='+886912345678',
+        password_hash=password_hash,
+        password_salt=password_salt,
+        password_iters=password_iters,
+        status=1,
+        email_verified=True  # 管理員用戶默認已驗證
+    )
+    
+    db.add(admin_user)
     db.commit()
-    print("✅ 管理員用戶創建成功")
+    print("[SUCCESS] 管理員用戶創建成功")
 
 def assign_admin_permissions(db: Session):
     """為管理員角色分配所有權限"""
-    # 獲取管理員角色 ID
-    result = db.execute(text("SELECT id FROM roles WHERE code = 'admin'"))
-    admin_role_id = result.scalar()
+    from app.models.role import Role
+    from app.models.permission import Permission
+    from app.models.role_permission import RolePermission
     
-    if not admin_role_id:
-        print("❌ 管理員角色不存在")
+    # 獲取管理員角色
+    admin_role = db.query(Role).filter(Role.code == 'admin').first()
+    if not admin_role:
+        print("[ERROR] 管理員角色不存在")
         return
     
-    # 獲取所有權限 ID
-    result = db.execute(text("SELECT id FROM permissions"))
-    permission_ids = [row[0] for row in result.fetchall()]
-    
-    if not permission_ids:
-        print("❌ 沒有權限數據")
+    # 獲取所有權限
+    permissions = db.query(Permission).all()
+    if not permissions:
+        print("[ERROR] 沒有權限數據")
         return
     
-    # 為管理員角色分配所有權限
     assigned_count = 0
-    for permission_id in permission_ids:
-        # 檢查是否已分配
-        result = db.execute(text("SELECT COUNT(*) FROM role_permissions WHERE role_id = :role_id AND permission_id = :permission_id"), {
-            "role_id": admin_role_id,
-            "permission_id": permission_id
-        })
-        if result.scalar() > 0:
+    for permission in permissions:
+        # 檢查是否已經分配
+        existing_assignment = db.query(RolePermission).filter(
+            RolePermission.role_id == admin_role.id,
+            RolePermission.permission_id == permission.id
+        ).first()
+        
+        if existing_assignment:
             continue
         
-        sql = """
-        INSERT INTO role_permissions (role_id, permission_id, created_at)
-        VALUES (:role_id, :permission_id, NOW())
-        """
-        db.execute(text(sql), {"role_id": admin_role_id, "permission_id": permission_id})
+        # 分配權限
+        role_permission = RolePermission(
+            role_id=admin_role.id,
+            permission_id=permission.id
+        )
+        
+        db.add(role_permission)
         assigned_count += 1
     
     db.commit()
-    print(f"✅ 管理員權限分配完成，分配了 {assigned_count} 個權限")
+    print(f"[SUCCESS] 管理員權限分配完成，分配了 {assigned_count} 個權限")
 
 def assign_admin_role_to_user(db: Session):
     """為管理員用戶分配管理員角色"""
-    # 獲取管理員用戶 ID
-    result = db.execute(text("SELECT id FROM users WHERE username = 'admin'"))
-    admin_user_id = result.scalar()
+    from app.models.user import User
+    from app.models.role import Role
+    from app.models.user_role import UserRole
     
-    if not admin_user_id:
-        print("❌ 管理員用戶不存在")
+    # 獲取管理員用戶
+    admin_user = db.query(User).filter(User.username == 'admin').first()
+    if not admin_user:
+        print("[ERROR] 管理員用戶不存在")
         return
     
-    # 獲取管理員角色 ID
-    result = db.execute(text("SELECT id FROM roles WHERE code = 'admin'"))
-    admin_role_id = result.scalar()
-    
-    if not admin_role_id:
-        print("❌ 管理員角色不存在")
+    # 獲取管理員角色
+    admin_role = db.query(Role).filter(Role.code == 'admin').first()
+    if not admin_role:
+        print("[ERROR] 管理員角色不存在")
         return
     
-    # 檢查是否已分配
-    result = db.execute(text("SELECT COUNT(*) FROM user_roles WHERE user_id = :user_id AND role_id = :role_id"), {
-        "user_id": admin_user_id,
-        "role_id": admin_role_id
-    })
-    if result.scalar() > 0:
-        print("✅ 管理員用戶角色已分配")
+    # 檢查是否已經分配
+    existing_assignment = db.query(UserRole).filter(
+        UserRole.user_id == admin_user.id,
+        UserRole.role_id == admin_role.id
+    ).first()
+    
+    if existing_assignment:
+        print("[SUCCESS] 管理員用戶角色已分配")
         return
     
     # 分配角色
-    sql = """
-    INSERT INTO user_roles (user_id, role_id, created_at)
-    VALUES (:user_id, :role_id, NOW())
-    """
-    db.execute(text(sql), {"user_id": admin_user_id, "role_id": admin_role_id})
+    user_role = UserRole(
+        user_id=admin_user.id,
+        role_id=admin_role.id
+    )
+    
+    db.add(user_role)
     db.commit()
-    print("✅ 管理員用戶角色分配完成")
+    print("[SUCCESS] 管理員用戶角色分配完成")
 
 def setup_database():
     """設置數據庫"""
-    print("🗄️  開始設置數據庫...")
+    print("[INFO] 開始設置數據庫...")
     print("=" * 60)
     
     db = SessionLocal()
     try:
         # 1. 創建 migrations 表
-        print("\n📋 步驟 1: 創建 migrations 表")
+        print("\n[STEP] 步驟 1: 創建 migrations 表")
         print("-" * 30)
         create_migrations_table(db)
         
         # 2. 創建所有業務表
-        print("\n📋 步驟 2: 創建所有業務表")
+        print("\n[STEP] 步驟 2: 創建所有業務表")
         print("-" * 30)
         create_all_tables(db)
         
         # 3. 創建管理員角色
-        print("\n📋 步驟 3: 創建管理員角色")
+        print("\n[STEP] 步驟 3: 創建管理員角色")
         print("-" * 30)
         create_admin_role(db)
         
         # 4. 創建權限數據
-        print("\n📋 步驟 4: 創建權限數據")
+        print("\n[STEP] 步驟 4: 創建權限數據")
         print("-" * 30)
         create_permissions(db)
         
         # 5. 創建管理員用戶
-        print("\n📋 步驟 5: 創建管理員用戶")
+        print("\n[STEP] 步驟 5: 創建管理員用戶")
         print("-" * 30)
         create_admin_user(db)
         
         # 6. 為管理員角色分配權限
-        print("\n📋 步驟 6: 為管理員角色分配權限")
+        print("\n[STEP] 步驟 6: 為管理員角色分配權限")
         print("-" * 30)
         assign_admin_permissions(db)
         
         # 7. 為管理員用戶分配角色
-        print("\n📋 步驟 7: 為管理員用戶分配角色")
+        print("\n[STEP] 步驟 7: 為管理員用戶分配角色")
         print("-" * 30)
         assign_admin_role_to_user(db)
         
         print("\n" + "=" * 60)
-        print("🎉 數據庫設置完成！")
-        print("\n📊 創建的內容:")
+        print("[SUCCESS] 數據庫設置完成！")
+        print("\n[INFO] 創建的內容:")
         print("• 所有數據庫表")
         print("• 管理員角色 (admin)")
         print("• 完整的權限系統")
         print("• 管理員用戶 (admin)")
         print("• 管理員權限分配")
         
-        print("\n🔑 管理員登入信息:")
+        print("\n[INFO] 管理員登入信息:")
         print("• 用戶名: admin")
         print("• 密碼: Admin123!@#")
         print("• 郵箱: admin@lazy.com")
         
-        print("\n🌐 可以訪問:")
+        print("\n[INFO] 可以訪問:")
         print("• API 文檔: http://localhost:8000/docs")
         print("• 健康檢查: http://localhost:8000/health")
         
     except Exception as e:
-        print(f"\n❌ 數據庫設置失敗: {str(e)}")
+        print(f"\n[ERROR] 數據庫設置失敗: {str(e)}")
         db.rollback()
         raise e
     finally:

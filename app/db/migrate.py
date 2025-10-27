@@ -11,19 +11,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from app.db import SessionLocal
 from app.db.migrations.base import BaseMigration
-from app.db.migrations.create_migrations_table import CreateMigrationsTable
-from app.db.migrations.create_all_tables import CreateAllTables
-from app.db.migrations.add_email_verification import AddEmailVerification
+from app.db.migrations import get_migration_classes
 
 class MigrationManager:
     """Migration 管理器"""
     
     def __init__(self):
-        self.migrations: List[BaseMigration] = [
-            CreateMigrationsTable(),
-            CreateAllTables(),
-            AddEmailVerification(),
-        ]
+        # 動態獲取遷移類
+        migration_classes = get_migration_classes()
+        self.migrations: List[BaseMigration] = [cls() for cls in migration_classes]
     
     def get_executed_migrations(self, db: Session) -> List[str]:
         """獲取已執行的 migration 版本"""
@@ -38,16 +34,16 @@ class MigrationManager:
         """執行所有未執行的 migrations"""
         executed_versions = self.get_executed_migrations(db)
         
-        print("🚀 開始執行 Migrations...")
+        print("[INFO] 開始執行 Migrations...")
         print("=" * 50)
         
         for migration in self.migrations:
             if migration.version in executed_versions:
-                print(f"⏭️  跳過 {migration.version}: {migration.description}")
+                print(f"[SKIP] 跳過 {migration.version}: {migration.description}")
                 continue
             
             try:
-                print(f"🔄 執行 {migration.version}: {migration.description}")
+                print(f"[RUN] 執行 {migration.version}: {migration.description}")
                 migration.up(db)
                 
                 # 記錄已執行的 migration
@@ -62,15 +58,15 @@ class MigrationManager:
                 })
                 db.commit()
                 
-                print(f"✅ 完成 {migration.version}")
+                print(f"[SUCCESS] 完成 {migration.version}")
                 
             except Exception as e:
-                print(f"❌ 失敗 {migration.version}: {str(e)}")
+                print(f"[ERROR] 失敗 {migration.version}: {str(e)}")
                 db.rollback()
                 raise e
         
         print("=" * 50)
-        print("🎉 所有 Migrations 執行完成！")
+        print("[SUCCESS] 所有 Migrations 執行完成！")
     
     def rollback_migration(self, db: Session, version: str):
         """回滾指定版本的 migration"""
@@ -92,10 +88,10 @@ class MigrationManager:
                     db.execute(text(sql), {"version": version})
                     db.commit()
                     
-                    print(f"✅ 回滾完成 {migration.version}")
+                    print(f"[SUCCESS] 回滾完成 {migration.version}")
                     
                 except Exception as e:
-                    print(f"❌ 回滾失敗 {migration.version}: {str(e)}")
+                    print(f"[ERROR] 回滾失敗 {migration.version}: {str(e)}")
                     db.rollback()
                     raise e
                 break
@@ -104,11 +100,11 @@ class MigrationManager:
         """顯示 migration 狀態"""
         executed_versions = self.get_executed_migrations(db)
         
-        print("📊 Migration 狀態")
+        print("[INFO] Migration 狀態")
         print("=" * 50)
         
         for migration in self.migrations:
-            status = "✅ 已執行" if migration.version in executed_versions else "⏳ 待執行"
+            status = "[DONE] 已執行" if migration.version in executed_versions else "[PENDING] 待執行"
             print(f"{status} {migration.version}: {migration.description}")
         
         print("=" * 50)

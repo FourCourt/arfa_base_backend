@@ -8,7 +8,7 @@ from typing import Dict
 # 環境配置
 ENVIRONMENT_CONFIGS = {
     "development": {
-        "DATABASE_URL": "mysql+pymysql://root:@localhost:3306/lazy_db",
+        "DATABASE_URL": "sqlite:///./lazy_dev.db",
         "DEBUG": True,
         "CORS_ORIGINS": ["http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000"],
         "SECRET_KEY": "development-secret-key-change-in-production"

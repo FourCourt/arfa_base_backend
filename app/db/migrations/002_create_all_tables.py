@@ -13,11 +13,21 @@ class CreateAllTables(BaseMigration):
     
     def up(self, db):
         """創建所有表"""
+        from app.core.config import settings
         
+        if "sqlite" in settings.DATABASE_URL:
+            # 使用 SQLAlchemy ORM 創建表
+            from app.models import Base
+            Base.metadata.create_all(bind=db.bind)
+        else:
+            # MySQL 語法
+            self.create_mysql_tables(db)
+    
+    def create_mysql_tables(self, db):
+        """創建 MySQL 表"""
         # 創建用戶表
         if not self.table_exists(db, "users"):
             self.create_users_table(db)
-        
         
         # 創建角色表
         if not self.table_exists(db, "roles"):

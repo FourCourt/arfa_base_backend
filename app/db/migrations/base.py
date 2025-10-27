@@ -62,3 +62,34 @@ class BaseMigration:
             """))
         
         return result.scalar() > 0
+    
+    def column_exists(self, db: Session, table_name: str, column_name: str) -> bool:
+        """檢查欄位是否存在"""
+        if settings.DATABASE_URL.startswith("mysql"):
+            result = db.execute(text(f"""
+                SELECT COUNT(*) 
+                FROM information_schema.columns 
+                WHERE table_schema = DATABASE() 
+                AND table_name = '{table_name}'
+                AND column_name = '{column_name}'
+            """))
+        elif settings.DATABASE_URL.startswith("postgresql"):
+            result = db.execute(text(f"""
+                SELECT COUNT(*) 
+                FROM information_schema.columns 
+                WHERE table_schema = 'public' 
+                AND table_name = '{table_name}'
+                AND column_name = '{column_name}'
+            """))
+        else:
+            # SQLite
+            result = db.execute(text(f"""
+                PRAGMA table_info({table_name})
+            """))
+            columns = result.fetchall()
+            for column in columns:
+                if column[1] == column_name:  # column[1] 是欄位名
+                    return True
+            return False
+        
+        return result.scalar() > 0

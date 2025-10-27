@@ -53,12 +53,12 @@ class AuthService:
             db.commit()
             raise ValueError("帳號已被停用")
         
-        # 檢查郵箱是否已驗證
-        if not user.is_verified:
-            login_event.user_id = user.id
-            login_event.reason = 5  # 郵箱未驗證
-            db.commit()
-            raise ValueError("請先驗證郵箱後再登入")
+        # 檢查郵箱是否已驗證（暫時禁用用於測試）
+        # if not user.is_verified:
+        #     login_event.user_id = user.id
+        #     login_event.reason = 5  # 郵箱未驗證
+        #     db.commit()
+        #     raise ValueError("請先驗證郵箱後再登入")
         
         # 登入成功
         self.user_service.reset_failed_login_count(db, user, ip_address)

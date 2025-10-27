@@ -11,39 +11,33 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from app.db import SessionLocal
 from app.db.seeders.base import BaseSeeder
-from app.db.seeders.create_admin_role import CreateAdminRoleSeeder
-from app.db.seeders.create_permissions import CreatePermissionsSeeder
-from app.db.seeders.create_admin_user import CreateAdminUserSeeder
-from app.db.seeders.assign_admin_permissions import AssignAdminPermissionsSeeder
+from app.db.seeders import get_seeder_classes
 
 class SeederManager:
     """Seeder 管理器"""
     
     def __init__(self):
-        self.seeders: List[BaseSeeder] = [
-            CreateAdminRoleSeeder(),
-            CreatePermissionsSeeder(),
-            CreateAdminUserSeeder(),
-            AssignAdminPermissionsSeeder(),
-        ]
+        # 動態獲取 seeder 類
+        seeder_classes = get_seeder_classes()
+        self.seeders: List[BaseSeeder] = [cls() for cls in seeder_classes]
     
     def run_all_seeders(self, db: Session):
         """執行所有 seeders"""
-        print("🌱 開始執行 Seeders...")
+        print("[INFO] 開始執行 Seeders...")
         print("=" * 50)
         
         for seeder in self.seeders:
             try:
-                print(f"🔄 執行 {seeder.name}: {seeder.description}")
+                print(f"[RUN] 執行 {seeder.name}: {seeder.description}")
                 seeder.run(db)
                 
             except Exception as e:
-                print(f"❌ 失敗 {seeder.name}: {str(e)}")
+                print(f"[ERROR] 失敗 {seeder.name}: {str(e)}")
                 db.rollback()
                 raise e
         
         print("=" * 50)
-        print("🎉 所有 Seeders 執行完成！")
+        print("[SUCCESS] 所有 Seeders 執行完成！")
     
     def run_specific_seeder(self, db: Session, seeder_name: str):
         """執行特定的 seeder"""

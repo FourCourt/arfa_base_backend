@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime, Boolean, Integer, VARBINARY, ForeignKey
+from sqlalchemy import Column, Integer, Boolean, VARBINARY, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,8 +8,8 @@ from app.models.base import Base
 class UserLoginEvent(Base):
     __tablename__ = "user_login_events"
     
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     succeeded = Column(Boolean, nullable=False)
     reason = Column(Integer, nullable=False)  # 1: 成功, 2: 密碼錯誤, 3: 用戶不存在, 4: 帳號鎖定
     ip = Column(VARBINARY(16), nullable=True)

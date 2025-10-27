@@ -14,8 +14,7 @@ class CreateMigrationsTable(BaseMigration):
     def up(self, db):
         """創建 migrations 表"""
         # 檢查資料庫類型
-        from app.core.config import get_settings
-        settings = get_settings()
+        from app.core.config import settings
         
         if "sqlite" in settings.DATABASE_URL:
             # SQLite 語法
